@@ -15,9 +15,10 @@ namespace The_Planet_Forge_Implementation.src
 
         [STAThread]
         private static void Main() {
-            RenderForm window = new RenderForm("The Planet Forge");
-            renderer = new CoreRenderer(window);
-            renderer.loop();
+
+            using (CoreRenderer renderer = new RendererImpl("The Planet Forge")) {
+                renderer.Run();
+            }
         }
     }
 }

@@ -105,6 +105,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="src\Program.cs" />
+    <Compile Include="src\renderer\RendererImpl.cs" />
     <Compile Include="src\renderer\CoreRenderer.cs" />
   </ItemGroup>
   <ItemGroup>
