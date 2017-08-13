@@ -11,8 +11,7 @@ namespace The_Planet_Forge_Implementation.src
 {
     internal static class Program
     {
-        private static CoreRenderer renderer;
-
+ 
         [STAThread]
         private static void Main() {
 

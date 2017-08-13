@@ -75,7 +75,7 @@ namespace The_Planet_Forge_Implementation.src.renderer {
         /// 
         /// </summary>
         /// <returns></returns>
-        private SwapChainDescription createSwapchainDescription() {
+        private SwapChainDescription CreateSwapchainDescription() {
             return new SwapChainDescription {
                 BufferCount = 1,
                 ModeDescription = new ModeDescription(window.ClientSize.Width, window.ClientSize.Height, new Rational(60, 1), Format.R8G8B8A8_UNorm),
@@ -102,7 +102,7 @@ namespace The_Planet_Forge_Implementation.src.renderer {
         /// 
         /// </summary>
         private void InitDevice() {
-            Device.CreateWithSwapChain(DriverType.Hardware, DeviceCreationFlags.None, createSwapchainDescription(), out device, out swapChain);
+            Device.CreateWithSwapChain(DriverType.Hardware, DeviceCreationFlags.None, CreateSwapchainDescription(), out device, out swapChain);
             deviceContext = device.ImmediateContext;
             factory = swapChain.GetParent<Factory>();
             factory.MakeWindowAssociation(window.Handle, WindowAssociationFlags.IgnoreAll);
