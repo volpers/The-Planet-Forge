@@ -3,6 +3,7 @@ using SharpDX.D3DCompiler;
 using SharpDX.Direct3D11;
 using System;
 using System.IO;
+using The_Planet_Forge_Implementation.renderer;
 using The_Planet_Forge_Implementation.src.renderer.datastructs;
 
 namespace The_Planet_Forge_Implementation.src.renderer {
@@ -43,22 +44,12 @@ namespace The_Planet_Forge_Implementation.src.renderer {
                 new InputElement("COLOR"   , 0, SharpDX.DXGI.Format.R32G32B32A32_Float, 16, 0),
             };
 
-            Vertex[] vertices = createVertices();
+            Vertex[] vertices = VertexFactory.CreateFlatTriangle();
 
-            BufferDescription description = new BufferDescription(32 * 3, ResourceUsage.Dynamic, BindFlags.VertexBuffer, CpuAccessFlags.Write, ResourceOptionFlags.None, 0);
+            BufferDescription description = new BufferDescription(32 * vertices.Length, ResourceUsage.Dynamic, BindFlags.VertexBuffer, CpuAccessFlags.Write, ResourceOptionFlags.None, 0);
             vertexBuffer = SharpDX.Direct3D11.Buffer.Create(Device, vertices, description);
 
             DeviceContext.InputAssembler.InputLayout = new InputLayout(Device, ShaderSignature.GetInputSignature(vertexShaderByteCode), elements);
-
-
-        }
-
-        private Vertex[] createVertices() {
-            return new Vertex[] {
-                new Vertex(0.0f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f),
-                new Vertex(0.5f, -.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f),
-                new Vertex(-.5f, -.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f),
-            };
-        }
+        }      
     }
 }

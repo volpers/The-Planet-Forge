@@ -100,12 +100,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="src\renderer\config\" />
-    <Folder Include="test\" />
+    <Folder Include="src\input\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="src\Program.cs" />
+    <Compile Include="src\renderer\3dstuff\D3DFunctions.cs" />
+    <Compile Include="src\renderer\config\RendererConfig.cs" />
     <Compile Include="src\renderer\datastructs\Vertex.cs" />
+    <Compile Include="src\renderer\datastructs\VertexFactory.cs" />
     <Compile Include="src\renderer\RendererImpl.cs" />
     <Compile Include="src\renderer\CoreRenderer.cs" />
   </ItemGroup>

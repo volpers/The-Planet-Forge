@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using SharpDX.Windows;
 using System.Windows.Forms;
+using The_Planet_Forge_Implementation.renderer;
 using The_Planet_Forge_Implementation.src.renderer;
 
 namespace The_Planet_Forge_Implementation.src
