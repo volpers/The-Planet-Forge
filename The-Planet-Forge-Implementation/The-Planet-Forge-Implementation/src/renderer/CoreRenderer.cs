@@ -24,6 +24,9 @@ namespace The_Planet_Forge_Implementation.renderer {
         public RenderTargetView RenderTargetView => _d3DFunctions.RenderTargetView;
         public Device Device => _d3DFunctions.Device;
 
+        private DepthStencilView DepthStencilView => _d3DFunctions.DepthStencilView;
+
+
         protected CoreRenderer(string windowName) {
             Init(windowName);
         }
@@ -71,7 +74,7 @@ namespace The_Planet_Forge_Implementation.renderer {
                 FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D
             };
             _d3DFunctions = new D3DFunctions();
-            _d3DFunctions.Init(_window);
+            //_d3DFunctions.Init(_window);
         }
 
         public virtual void Initialize() { }
@@ -80,7 +83,11 @@ namespace The_Planet_Forge_Implementation.renderer {
 
         public virtual void Update(TimeSpan totalGameTime, TimeSpan timeSinceLastFrame) { }
         public virtual void Draw(TimeSpan totalGameTime, TimeSpan timeSinceLastFrame) { }
-        public virtual void BeginFrame() { }
+
+        public virtual void BeginFrame() {
+           DeviceContext.ClearRenderTargetView(RenderTargetView, Color.CornflowerBlue);
+           DeviceContext.ClearDepthStencilView(DepthStencilView, DepthStencilClearFlags.Depth, 1f, 0);
+        }
         public virtual void EndFrame() {
             _d3DFunctions.SwapChain.Present(0, PresentFlags.None);
         }

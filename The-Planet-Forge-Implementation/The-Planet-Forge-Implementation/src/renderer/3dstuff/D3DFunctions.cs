@@ -18,7 +18,6 @@ namespace The_Planet_Forge_Implementation.renderer._3dstuff {
 
         private Texture2D _depthBuffer;
         private DepthStencilState _depthStencilState;
-        private DepthStencilStateDescription _depthStencilStateDescription;
         private DepthStencilView _depthStencilView;
         private RasterizerState _rasterizerState;
 
@@ -26,17 +25,29 @@ namespace The_Planet_Forge_Implementation.renderer._3dstuff {
         private Matrix _worldMatrix;
         private Matrix _orthoMatrix;
 
+        private float _screenNear = 0f;
+        private float _screenFar = 0f;
+
 
         public Device Device => _device;
         public DeviceContext DeviceContext => _deviceContext;
         public RenderTargetView RenderTargetView => _renderTargetView;
         public SwapChain SwapChain => _swapChain;
 
-        public void Init(RenderForm window) {
-            _window = window;
-            InitGraphics();
-        }
+        public DepthStencilView DepthStencilView => _depthStencilView;
 
+        public Matrix ProjectionMatrix => _projectionMatrix;
+        public Matrix WorldMatrix => _worldMatrix;
+        public Matrix OrthoMatrix => _orthoMatrix;
+
+        public void Init(RenderForm window, float screenNear, float screenFar) {
+            _window = window;
+            _screenNear = screenNear;
+            _screenFar = screenFar;
+            InitGraphics();
+            InitProjectionMatrices();
+        }
+        
         /// <summary>
         /// 
         /// </summary>
@@ -50,6 +61,60 @@ namespace The_Planet_Forge_Implementation.renderer._3dstuff {
             _swapChain.Dispose();
             _factory.Dispose();
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void InitGraphics() {
+            _deviceContext = _device.ImmediateContext;
+            _factory = _swapChain.GetParent<Factory>();
+            _factory.MakeWindowAssociation(_window.Handle, WindowAssociationFlags.IgnoreAll);
+            _backBuffer = SharpDX.Direct3D11.Resource.FromSwapChain<Texture2D>(_swapChain, 0);
+            _renderTargetView = new RenderTargetView(_device, _backBuffer);
+
+            InitDepthBuffer();
+            InitRasterizerState();
+            _deviceContext.OutputMerger.SetRenderTargets(_depthStencilView, _renderTargetView);
+            _deviceContext.Rasterizer.SetViewport(new Viewport(0, 0, _window.ClientSize.Width, _window.ClientSize.Height, 0.0f, 1.0f));
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void InitProjectionMatrices() {
+            float fieldOfView = (float)MathUtil.Pi / 4.0f;
+            float aspectRatio = (float) _window.Width / (float) _window.Height;
+            _projectionMatrix = Matrix.PerspectiveFovLH(fieldOfView, aspectRatio, _screenNear, _screenFar);
+            _worldMatrix = Matrix.Identity;
+            _orthoMatrix = Matrix.OrthoLH(_window.Width, _window.Height, _screenNear, _screenFar);
+        }
+
+        /// <summary>
+        /// depthStencilViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+        ///	depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+        ///	depthStencilViewDesc.Texture2D.MipSlice = 0;
+        /// </summary>
+        private void InitDepthBuffer() {
+            Device.CreateWithSwapChain(DriverType.Hardware, DeviceCreationFlags.None, CreateSwapchainDescription(), out _device, out _swapChain);
+            _depthBuffer = new Texture2D(_device, CreateDepthBufferDescription());
+            _depthStencilState = new DepthStencilState(_device, CreateDepthStencilStateDescription());
+            _deviceContext.OutputMerger.SetDepthStencilState(_depthStencilState);
+
+            var depthStencilViewDescription = new DepthStencilViewDescription {
+                Format = Format.D24_UNorm_S8_UInt,
+                Dimension = DepthStencilViewDimension.Texture2D,
+                Texture2D = new DepthStencilViewDescription.Texture2DResource {
+                    MipSlice = 0
+                }
+            };
+            _depthStencilView = new DepthStencilView(_device, _depthBuffer, depthStencilViewDescription);
+        }
+
+        private void InitRasterizerState() {
+            _rasterizerState = new RasterizerState(_device, CreateRasterizerStateDescription());
+            _deviceContext.Rasterizer.State = _rasterizerState;
+        }
+       
 
         /// <summary>
         /// 
@@ -133,7 +198,7 @@ namespace The_Planet_Forge_Implementation.renderer._3dstuff {
                     FailOperation = StencilOperation.Keep,
                     DepthFailOperation = StencilOperation.Increment,
                     Comparison = Comparison.Always,
-                    PassOperation =  StencilOperation.Keep
+                    PassOperation = StencilOperation.Keep
                 },
                 FrontFace = new DepthStencilOperationDescription {
                     FailOperation = StencilOperation.Keep,
@@ -145,25 +210,22 @@ namespace The_Planet_Forge_Implementation.renderer._3dstuff {
         }
 
         /// <summary>
-        /// 
+        /// This will give us control over how polygons are rendered. We can do things like make our scenes render in wireframe mode or have DirectX draw both the front and back faces of polygons	
         /// </summary>
-        private void InitGraphics() {
-            _deviceContext = _device.ImmediateContext;
-            _factory = _swapChain.GetParent<Factory>();
-            _factory.MakeWindowAssociation(_window.Handle, WindowAssociationFlags.IgnoreAll);
-            _backBuffer = SharpDX.Direct3D11.Resource.FromSwapChain<Texture2D>(_swapChain, 0);
-            _renderTargetView = new RenderTargetView(_device, _backBuffer);
-            _deviceContext.Rasterizer.SetViewport(new Viewport(0, 0, _window.ClientSize.Width, _window.ClientSize.Height, 0.0f, 1.0f));
-            _deviceContext.OutputMerger.SetTargets(RenderTargetView);
-
-            InitDepthBuffer();
-        }
-
-        private void InitDepthBuffer() {
-            Device.CreateWithSwapChain(DriverType.Hardware, DeviceCreationFlags.None, CreateSwapchainDescription(), out _device, out _swapChain);
-            _depthBuffer = new Texture2D(_device, CreateDepthBufferDescription());
-            _depthStencilState = new DepthStencilState(_device, CreateDepthStencilStateDescription());
-            _deviceContext.OutputMerger.SetDepthStencilState(_depthStencilState);
+        /// <returns></returns>
+        private RasterizerStateDescription CreateRasterizerStateDescription() {
+            return new RasterizerStateDescription {
+                IsAntialiasedLineEnabled = false,
+                CullMode = CullMode.Back,
+                DepthBias = 0,
+                DepthBiasClamp = 0.0f,
+                IsDepthClipEnabled = true,
+                FillMode = FillMode.Solid,
+                IsFrontCounterClockwise = false,
+                IsMultisampleEnabled = false,
+                IsScissorEnabled = false,
+                SlopeScaledDepthBias = 0.0f
+            };
         }
     }
 }
